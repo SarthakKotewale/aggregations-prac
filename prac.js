@@ -328,3 +328,48 @@ db.people.aggregate([
         $limit: 3
     }
 ])
+//aggregate05: Count the number of restaurant payments, the total amount spent, and the average amount per payment by country.
+db.people.aggregate([
+    {
+        $unwind: "$payments"
+    },
+    {
+        $match: {
+            "payments.name": "restaurant"
+        }
+    },
+    {
+        $group: {
+            _id: "$address.country",
+            totalVisits: {
+                $sum: 1
+            },
+            totalAmount: {
+                $sum: "$payments.amount"
+            },
+            averageAmt: {
+                $avg: "$payments.amount"
+            }
+        }
+    }
+])
+
+//aggregate06: There is a country where the average payment at a restaurant is the highest and a country where the average payment at a restaurant is the lowest. How many times more people in the first country spend than people in the second?
+db.people.aggregate([
+    {
+        $unwind: "$payments"
+    },
+    {
+        $match: {
+            "payments.name": "restaurant"
+        }
+    },
+    { $group: { _id: "$address.country",
+        avgAmount: {
+            $avg: "$payments.amount"
+        },
+        "minAmount" : {"$min" : "$avgAmount" },
+        "maxAmount" : {"$max" : "$avgAmount" } 
+        }
+    }
+])
